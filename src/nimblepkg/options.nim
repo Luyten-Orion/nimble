@@ -551,7 +551,7 @@ proc parseCmdLine*(): Options =
 
   # Parse command line params first. A simple `--version` shouldn't require
   # a config to be parsed.
-  for kind, key, val in getOpt():
+  for kind, key, val in commandLineParams().getOpt():
     case kind
     of cmdArgument:
       if result.action.typ == actionNil:
