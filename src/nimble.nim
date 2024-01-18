@@ -62,7 +62,7 @@ proc processDeps(pkginfo: PackageInfo, options: Options): seq[PackageInfo] =
   once: pkgList = getInstalledPkgsMin(options.getPkgsDir(), options)
   var reverseDeps: seq[tuple[name, version: string]] = @[]
   for dep in pkginfo.requires:
-    if dep.name == "nimrod" or dep.name == "nim":
+    if not defined(isNimSkull) and (dep.name == "nimrod" or dep.name == "nim"):
       let nimVer = getNimrodVersion(options)
       if not withinRange(nimVer, dep.ver):
         let msg = "Unsatisfied dependency: " & dep.name & " (" & $dep.ver & ")"
