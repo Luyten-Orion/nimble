@@ -57,11 +57,15 @@ template cd*(dir: string, body: untyped) =
   setCurrentDir(lastDir)
 
 proc getNimrodVersion*(options: Options): Version =
-  let vOutput = doCmdEx(getNimBin(options).quoteShell & " -v").output
-  var matches: array[0..MaxSubpatterns, string]
-  if vOutput.find(peg"'Version'\s{(\d+\.)+\d+}", matches) == -1:
-    raise newException(NimbleError, "Couldn't find Nim version.")
-  newVersion(matches[0])
+  when not defined(isNimSkull):
+    let vOutput = doCmdEx(getNimBin(options).quoteShell & " -v").output
+    var matches: array[0..MaxSubpatterns, string]
+    if vOutput.find(peg"'Version'\s{(\d+\.)+\d+}", matches) == -1:
+      raise newException(NimbleError, "Couldn't find Nim version.")
+    newVersion(matches[0])
+  else:
+    # nimskull is mostly compatible with nim 1.6.0
+    newVersion("1.6.0")
 
 proc samePaths*(p1, p2: string): bool =
   ## Normalizes path (by adding a trailing slash) and compares.
