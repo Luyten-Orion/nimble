@@ -38,6 +38,7 @@ type
     startDir*: string # Current directory on startup - is top level pkg dir for
                       # some commands, useful when processing deps
     nim*: string # Nim compiler location
+    nimVersionOverride*: Option[Version] # Version to override Nim to, useful for installing deps
     localdeps*: bool # True if project local deps mode
     developLocaldeps*: bool # True if local deps + nimble develop pkg1 ...
     disableSslCertCheck*: bool
@@ -456,11 +457,21 @@ proc parseFlag*(flag, val: string, result: var Options, kind = cmdLongOption) =
       result.depsOnly = true
     of "passnim", "p":
       result.action.passNimFlags.add(val)
+    of "overridenimversion":
+      result.nimVersionOverride = some(newVersion(val))
     else:
       if not isGlobalFlag:
         result.action.passNimFlags.add(getFlagString(kind, flag, val))
       else:
         wasFlagHandled = false
+    case f
+    of "overridenimversion":
+      result.nimVersionOverride = some(newVersion(val))
+    else:
+      if not isGlobalFlag:
+        result.action.passNimFlags.add(getFlagString(kind, flag, val))
+      else:
+        wasFlagHandled = false  
   of actionInit:
     case f
     of "git", "hg":
@@ -474,8 +485,11 @@ proc parseFlag*(flag, val: string, result: var Options, kind = cmdLongOption) =
     else:
       wasFlagHandled = false
   of actionCompile, actionDoc, actionBuild:
-    if not isGlobalFlag:
-      result.action.compileOptions.add(getFlagString(kind, flag, val))
+    if f == "overridenimversion":
+      result.nimVersionOverride = some(newVersion(val))
+    else:
+      if not isGlobalFlag:
+        result.action.compileOptions.add(getFlagString(kind, flag, val))
   of actionRun:
     result.showHelp = false
     if not isGlobalFlag:

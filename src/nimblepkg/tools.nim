@@ -2,7 +2,7 @@
 # BSD License. Look at license.txt for more info.
 #
 # Various miscellaneous utility functions reside here.
-import osproc, pegs, strutils, os, uri, sets, json, parseutils
+import osproc, pegs, strutils, os, uri, sets, json, parseutils, std/options as std_opt
 import version, cli, options
 from net import SslCVerifyMode, newContext, SslContext
 
@@ -64,8 +64,12 @@ proc getNimrodVersion*(options: Options): Version =
       raise newException(NimbleError, "Couldn't find Nim version.")
     newVersion(matches[0])
   else:
-    # nimskull is mostly compatible with nim 1.6.0
-    newVersion("1.6.0")
+    if options.nimVersionOverride.isNone:
+      # nimskull is mostly compatible with nim 1.6.0
+      newVersion("1.6.0")
+    else:
+      # Return our override if it was set
+      options.nimVersionOverride.unsafeGet()
 
 proc samePaths*(p1, p2: string): bool =
   ## Normalizes path (by adding a trailing slash) and compares.
